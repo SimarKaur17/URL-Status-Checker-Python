@@ -1,74 +1,37 @@
-import json
-import os
+import requests
 
-FILE_NAME = "expenses.json"
+def check_website(url):
+    try:
+        response = requests.get(url, timeout=5)
+        code = response.status_code
 
-# Load expenses from file
-def load_expenses():
-    if os.path.exists(FILE_NAME):
-        with open(FILE_NAME, "r") as file:
-            return json.load(file)
-    return []
+        print("\nStatus Code:", code)
 
-# Save expenses to file
-def save_expenses(expenses):
-    with open(FILE_NAME, "w") as file:
-        json.dump(expenses, file, indent=4)
-
-# Add expense
-def add_expense():
-    name = input("Enter expense name: ")
-    amount = float(input("Enter amount: "))
-
-    expense = {"name": name, "amount": amount}
-
-    expenses = load_expenses()
-    expenses.append(expense)
-    save_expenses(expenses)
-
-    print("Expense added successfully!\n")
-
-# View expenses
-def view_expenses():
-    expenses = load_expenses()
-
-    if not expenses:
-        print("No expenses found.\n")
-        return
-
-    print("\n--- Expense List ---")
-    for i, exp in enumerate(expenses, 1):
-        print(f"{i}. {exp['name']} - ₹{exp['amount']}")
-
-    print()
-
-# Total expense
-def total_expense():
-    expenses = load_expenses()
-    total = sum(exp["amount"] for exp in expenses)
-    print(f"\nTotal Expense: ₹{total}\n")
-
-# Main menu
-def main():
-    while True:
-        print("1. Add Expense")
-        print("2. View Expenses")
-        print("3. Total Expense")
-        print("4. Exit")
-
-        choice = input("Enter choice: ")
-
-        if choice == "1":
-            add_expense()
-        elif choice == "2":
-            view_expenses()
-        elif choice == "3":
-            total_expense()
-        elif choice == "4":
-            print("Exiting...")
-            break
+        if code == 200:
+            print("Website is UP")
+        elif code == 301 or code == 302:
+            print("Website redirected")
+        elif code == 403:
+            print("Access Forbidden")
+        elif code == 404:
+            print("Page Not Found")
+        elif code == 500:
+            print("Internal Server Error")
+        elif code == 503:
+            print("Service Unavailable (Server Down or Busy)")
         else:
-            print("Invalid choice\n")
+            print("Unknown Status Code")
+
+    except requests.exceptions.Timeout:
+        print("Website timed out")
+    except requests.exceptions.ConnectionError:
+        print("Website is DOWN")
+    except requests.exceptions.InvalidURL:
+        print("Invalid URL")
+
+def main():
+    url = input("Enter website URL (https://example.com): ")
+    check_website(url)
 
 if __name__ == "__main__":
     main()
